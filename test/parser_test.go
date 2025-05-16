@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
 	"path/filepath"
 	"testing"
@@ -35,4 +36,17 @@ func TestASA302014Pattern(t *testing.T) {
 	if fields["msg"] != "Some test message" {
 		t.Errorf("Got msg: %q", fields["msg"])
 	}
+}
+func TestPrintExpandedRegex(t *testing.T) {
+	err := grokparse.LoadAllPatternFiles("../patterns")
+	if err != nil {
+		t.Fatalf("Failed to load pattern files: %v", err)
+	}
+
+	regex, err := grokparse.GetExpandedRegex("%{ASA302014}")
+	if err != nil {
+		t.Fatalf("Error expanding pattern: %v", err)
+	}
+
+	fmt.Println("Expanded regex:", regex)
 }
