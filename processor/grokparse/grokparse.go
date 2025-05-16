@@ -1,84 +1,110 @@
 package grokparse
 
 import (
+    "bufio"
+    "errors"
     "fmt"
+    "os"
+    "path/filepath"
     "regexp"
     "strings"
+    "sync"
 )
 
-// Patterns is populated by the loader at startup.
-var Patterns = map[string]string{}
+var (
+    Patterns = map[string]string{}
+    mu       sync.RWMutex
+)
 
-// expandPattern recursively interpolates pattern references.
-func expandPattern(p string, seen map[string]struct{}) string {
-    re := regexp.MustCompile(`%{(\w+)}`)
-    for {
-        m := re.FindStringSubmatch(p)
-        if m == nil {
-            break
-        }
-        key := m[1]
-        if _, already := seen[key]; already {
-            p = re.ReplaceAllString(p, ".*")
-            break
-        }
-        seen[key] = struct{}{}
-        sub, ok := Patterns[key]
-        if !ok {
-            p = re.ReplaceAllString(p, ".*")
-        } else {
-            sub = expandPattern(sub, seen)
-            p = re.ReplaceAllString(p, "("+sub+")")
+// LoadAllPatternFiles loads .grok files from the given directory
+func LoadAllPatternFiles(patternDir string) error {
+    files, err := os.ReadDir(patternDir)
+    if err != nil {
+        return fmt.Errorf("could not read pattern directory: %w", err)
+    }
+    mu.Lock()
+    defer mu.Unlock()
+    for _, file := range files {
+        if !file.IsDir() && strings.HasSuffix(file.Name(), ".grok") {
+            fullPath := filepath.Join(patternDir, file.Name())
+            f, err := os.Open(fullPath)
+            if err != nil {
+                return fmt.Errorf("could not open %s: %w", fullPath, err)
+            }
+            scanner := bufio.NewScanner(f)
+            for scanner.Scan() {
+                line := scanner.Text()
+                if strings.TrimSpace(line) == "" || strings.HasPrefix(line, "#") {
+                    continue
+                }
+                parts := strings.SplitN(line, " ", 2)
+                if len(parts) != 2 {
+                    continue
+                }
+                Patterns[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+            }
+            f.Close()
         }
     }
-    return p
+    return nil
 }
 
-// CompileGrok compiles a Grok pattern into a Go regexp with named groups.
-func CompileGrok(pattern string) (*regexp.Regexp, error) {
-    re := regexp.MustCompile(`%{(\w+)(?::([\w_]+))?}`)
-    result := re.ReplaceAllStringFunc(pattern, func(s string) string {
-        m := re.FindStringSubmatch(s)
-        base := expandPattern("%{"+m[1]+"}", map[string]struct{}{})
-        if m[2] != "" {
-            return fmt.Sprintf("(?P<%s>%s)", m[2], base)
+// expandPattern recursively expands Grok patterns.
+func expandPattern(pattern string, depth int) (string, error) {
+    if depth > 10 {
+        return "", errors.New("pattern recursion too deep")
+    }
+    re := regexp.MustCompile(`%{(\w+)(?::(\w+))?}`)
+   	for {
+        loc := re.FindStringIndex(pattern)
+        if loc == nil {
+            break
         }
-        return fmt.Sprintf("(%s)", base)
-    })
-    return regexp.Compile(result)
+        match := pattern[loc[0]:loc[1]]
+        submatches := re.FindStringSubmatch(match)
+        patName := submatches[1]
+        var field string
+        if len(submatches) > 2 {
+            field = submatches[2]
+        }
+        mu.RLock()
+        pat, ok := Patterns[patName]
+        mu.RUnlock()
+        if !ok {
+            return "", fmt.Errorf("unknown pattern: %s", patName)
+        }
+        expPat, err := expandPattern(pat, depth+1)
+        if err != nil {
+            return "", err
+        }
+        rep := "(?P<" + field + ">" + expPat + ")"
+        if field == "" {
+            rep = "(" + expPat + ")"
+        }
+        pattern = pattern[:loc[0]] + rep + pattern[loc[1]:]
+    }
+    return pattern, nil
 }
 
-// ParseLine parses a log line using the given Grok pattern.
-func ParseLine(pattern, logline string) (map[string]string, error) {
-    re, err := CompileGrok(pattern)
+// ParseLine attempts to apply the Grok pattern to the log line and extract fields
+func ParseLine(pattern, line string) (map[string]string, error) {
+    expanded, err := expandPattern(pattern, 0)
     if err != nil {
         return nil, err
     }
-    match := re.FindStringSubmatch(logline)
-    if match == nil {
-        return nil, fmt.Errorf("no match")
+    re, err := regexp.Compile("^" + expanded + "$")
+    if err != nil {
+        return nil, fmt.Errorf("pattern compile failed: %w", err)
     }
-    out := map[string]string{}
+    matches := re.FindStringSubmatch(line)
+    if matches == nil {
+        return nil, errors.New("no match")
+    }
+    result := make(map[string]string)
     for i, name := range re.SubexpNames() {
         if i > 0 && name != "" {
-            out[name] = match[i]
+            result[name] = matches[i]
         }
     }
-    return out, nil
+    return result, nil
 }
-
-// FieldMap enables mapping field names.
-type FieldMap map[string]string
-
-func MapFields(src map[string]string, fmap FieldMap) map[string]string {
-    out := make(map[string]string, len(src))
-    for k, v := range src {
-        if mapped, ok := fmap[k]; ok && mapped != "" {
-            out[mapped] = v
-        } else {
-            out[k] = v
-        }
-    }
-    return out
-}
-
