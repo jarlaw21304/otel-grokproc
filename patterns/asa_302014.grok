@@ -1,0 +1,1 @@
+ASA302014 %{TIMESTAMP_ISO8601:timestamp} %{IP:src_ip} %{IP:dst_ip} %{GREEDYDATA:msg}

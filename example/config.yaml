@@ -1,0 +1,7 @@
+processors:
+  grokproc:
+    pattern: "%{SYSLOGPARSER}"
+    pattern_directory: "./patterns"
+    field_map:
+      level: log.severity
+      msg: log.message
