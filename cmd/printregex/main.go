@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
+	
 )
 
 func main() {
