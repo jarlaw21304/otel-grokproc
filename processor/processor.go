@@ -2,22 +2,38 @@ package processor
 
 import (
     "context"
+    "fmt"
+    "strings"
 
-    "github.com/yourorg/otel-grokproc/grokparse"
+    "github.com/yourorg/otel-grokproc/processor/grokparse"
     "go.opentelemetry.io/collector/component"
     "go.opentelemetry.io/collector/consumer"
     "go.opentelemetry.io/collector/pdata/plog"
     "go.opentelemetry.io/collector/processor"
 )
 
-// GrokProcessor contains config and parsing logic
+// GrokProcessor contains config, loader, and parser
 type GrokProcessor struct {
-    cfg *Config
+    cfg      *Config
+    grokInst *grokparse.GrokWrapper
 }
 
-// NewProcessor builds the GrokProcessor from config.
-func NewProcessor(cfg *Config) *GrokProcessor {
-    return &GrokProcessor{cfg: cfg}
+// Wrapper helps expose pattern parsing
+type GrokWrapper struct {
+    Parser *grokparse.Grok
+    // You can add caching here if needed for performance
+}
+
+// NewProcessor builds the processor, loads patterns
+func NewProcessor(cfg *Config) (*GrokProcessor, error) {
+    g, err := grokparse.LoadAllPatternFiles(cfg.PatternDirectory)
+    if err != nil {
+        return nil, fmt.Errorf("failed loading grok patterns: %w", err)
+    }
+    return &GrokProcessor{
+        cfg:      cfg,
+        grokInst: &grokparse.GrokWrapper{Parser: g},
+    }, nil
 }
 
 // ProcessLogs parses log bodies with grok and sets extracted fields as OTEL attributes.
@@ -28,29 +44,24 @@ func (p *GrokProcessor) ProcessLogs(ctx context.Context, logs plog.Logs) (plog.L
             sl := rl.ScopeLogs().At(j)
             for k := 0; k < sl.LogRecords().Len(); k++ {
                 lr := sl.LogRecords().At(k)
+
                 body := lr.Body().AsString()
                 pattern := p.cfg.Pattern
-                if pattern == "" && p.cfg.VendorFormat != "" {
-                    pattern = "%{" + p.cfg.VendorFormat + "}"
-                }
-                if pattern == "" {
+                if strings.TrimSpace(pattern) == "" {
+                    // Skip processing if not configured
                     continue
                 }
-                parsed, err := grokparse.ParseLine(pattern, body)
+                // Call the parser
+                parsed, err := p.grokInst.Parser.Parse(pattern, body)
                 if err != nil {
-                    continue
+                    continue // Or log error
                 }
-                if p.cfg.ExtractCEF {
-                    if ext, ok := parsed["cef_ext"]; ok {
-                        extMap := grokparse.ParseCEFExtension(ext)
-                        for k, v := range extMap {
-                            parsed[k] = v
-                        }
+                for key, val := range parsed {
+                    if dest, ok := p.cfg.FieldMap[key]; ok {
+                        lr.Attributes().PutStr(dest, val)
+                    } else {
+                        lr.Attributes().PutStr(key, val)
                     }
-                }
-                mapped := grokparse.MapFields(parsed, p.cfg.FieldMap)
-                for k, v := range mapped {
-                    lr.Attributes().PutStr(k, v)
                 }
             }
         }
@@ -76,7 +87,6 @@ func (p *grokProcProcessor) Shutdown(ctx context.Context) error {
     return nil
 }
 
-// ConsumeLogs is called by the collector pipeline to process logs.
 func (p *grokProcProcessor) ConsumeLogs(ctx context.Context, logs plog.Logs) error {
     outLogs, err := p.proc.ProcessLogs(ctx, logs)
     if err != nil {
@@ -84,4 +94,3 @@ func (p *grokProcProcessor) ConsumeLogs(ctx context.Context, logs plog.Logs) err
     }
     return p.next.ConsumeLogs(ctx, outLogs)
 }
-```
