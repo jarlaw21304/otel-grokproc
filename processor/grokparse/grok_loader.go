@@ -5,7 +5,6 @@ import (
     "io/ioutil"
     "path/filepath"
     "strings"
-
     "github.com/elastic/go-grok"
 )
 
