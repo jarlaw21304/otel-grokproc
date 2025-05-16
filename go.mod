@@ -1,4 +1,4 @@
-module github.com/yourorg/otel-grokproc
+module github.com/jarlaw21304/otel-grokproc
 
 go 1.23.0
 

@@ -1,45 +1,51 @@
 package grokparse
 
 import (
-    "fmt"
+    "bufio"
     "io/ioutil"
+    "os"
     "path/filepath"
     "strings"
-    "github.com/elastic/go-grok"
 )
 
-type Grok struct {
-    *grok.Grok
-}
-
-// Wrapper struct used above
-type GrokWrapper struct {
-    Parser *Grok
-}
-
-// LoadAllPatternFiles returns a Grok instance loading all .grok patterns in a dir
-func LoadAllPatternFiles(patternDir string) (*Grok, error) {
-    g, err := grok.New()
-    if err != nil {
-        return nil, fmt.Errorf("failed to create Grok instance: %w", err)
-    }
+// LoadAllPatternFiles reads *.grok pattern files from a directory.
+// Each file may contain one or more lines: NAME GROK_PATTERN
+func LoadAllPatternFiles(patternDir string) error {
     files, err := ioutil.ReadDir(patternDir)
     if err != nil {
-        return nil, fmt.Errorf("failed to read pattern directory: %w", err)
+        return err
     }
-    loaded := 0
     for _, file := range files {
         if file.IsDir() || !strings.HasSuffix(file.Name(), ".grok") {
             continue
         }
         fullPath := filepath.Join(patternDir, file.Name())
-        if err := g.AddPatternsFromFile(fullPath); err != nil {
-            return nil, fmt.Errorf("failed to load patterns from %s: %w", fullPath, err)
+        if err := loadPatternFile(fullPath); err != nil {
+            return err
         }
-        loaded++
     }
-    if loaded == 0 {
-        return nil, fmt.Errorf("no .grok files found in %s", patternDir)
-    }
-    return &Grok{Grok: g}, nil
+    return nil
 }
+
+func loadPatternFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        line := scanner.Text()
+        if strings.HasPrefix(line, "#") || strings.TrimSpace(line) == "" {
+            continue
+        }
+        idx := strings.Index(line, " ")
+        if idx > 0 {
+            name := line[:idx]
+            pat := strings.TrimSpace(line[idx+1:])
+            Patterns[name] = pat
+        }
+    }
+    return scanner.Err()
+}
+
