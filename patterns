@@ -1,1 +1,1 @@
-SYSLOGPARSER %{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{DATA:msg}
+
