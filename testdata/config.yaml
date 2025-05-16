@@ -1,0 +1,23 @@
+receivers:
+  filelog:
+    include: [ "example/samplelogs.txt" ]
+
+processors:
+  grokproc:
+    vendor_format: "CEF_PALOALTO"
+    extract_cef: true
+    field_map:
+      src: "source.ip"
+      dst: "destination.ip"
+      severity: "log.severity"
+
+exporters:
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    logs:
+      receivers: [filelog]
+      processors: [grokproc]
+      exporters: [logging]
