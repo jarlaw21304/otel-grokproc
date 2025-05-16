@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -13,6 +14,9 @@ func TestASA302014Pattern(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Pattern loading failed: %v", err)
 	}
+
+	t.Logf("Loaded patterns: %#v", grokparse.Patterns)
+
 	// Pattern here must exist in ASA302014.grok in patterns/
 	pattern := "%{ASA302014}"
 	sample := "2023-05-13T10:15:14 192.168.1.1 10.1.1.1 Some test message"

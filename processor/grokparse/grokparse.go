@@ -33,6 +33,11 @@ func expandPattern(p string, seen map[string]struct{}) string {
 	return p
 }
 
+// Helper for testing: exposes expanded pattern for debug
+func ExpandPatternForTest(pattern string) (string, error) {
+	return expandPattern(pattern, 0)
+}
+
 // CompileGrok compiles a Grok pattern into a Go regexp with named groups.
 func CompileGrok(pattern string) (*regexp.Regexp, error) {
 	re := regexp.MustCompile(`%{(\w+)(?::([\w_]+))?}`)
