@@ -1,4 +1,20 @@
-# otel-grok-processor
+# otel-grok-procotel-grokproc/
+├── go.mod
+├── go.sum
+├── README.md
+├── grokparse/
+│   ├── grokparse.go
+│   └── patterns.go
+├── processor/
+│   ├── config.go
+│   ├── processor.go
+│   └── factory.go
+├── example/
+│   ├── main.go
+│   └── samplelogs.txt
+├── testdata/
+│   └── config.yamlessor
+
 
 # OTEL Grok Processor
 
