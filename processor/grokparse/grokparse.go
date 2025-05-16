@@ -1,5 +1,3 @@
-
-```go
 package grokparse
 
 import (
@@ -83,4 +81,4 @@ func MapFields(src map[string]string, fmap FieldMap) map[string]string {
     }
     return out
 }
-```
+
