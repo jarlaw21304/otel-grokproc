@@ -4,16 +4,16 @@ import (
     "context"
 
     "go.opentelemetry.io/collector/component"
-    "go.opentelemetry.io/collector/processor"
-    "go.opentelemetry.io/collector/processor/processorhelper"
+    "go.opentelemetry.io/collector/config"
     "go.opentelemetry.io/collector/consumer"
+    "go.opentelemetry.io/collector/processor"
 )
 
 const (
     TypeStr = "grokproc"
 )
 
-func Factory() component.ProcessorFactory {
+func Factory() processor.Factory {
     return processor.NewFactory(
         TypeStr,
         createDefaultConfig,
@@ -32,18 +32,14 @@ func createDefaultConfig() component.Config {
 
 func createLogsProcessor(
     ctx context.Context,
-    params processor.CreateSettings,
+    settings processor.CreateSettings,
     cfg component.Config,
     next consumer.Logs,
 ) (processor.Logs, error) {
     pcfg := cfg.(*Config)
     proc := NewProcessor(pcfg)
-    return processorhelper.NewLogsProcessor(
-        ctx,
-        params,
-        cfg,
-        next,
-        proc.ProcessLogs,
-        processorhelper.WithCapabilities(processorhelper.Capabilities{MutatesData: true}),
-    )
+    return &grokProcProcessor{
+        next: next,
+        proc: proc,
+    }, nil
 }
