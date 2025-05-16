@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
 	"os"
 )
 
