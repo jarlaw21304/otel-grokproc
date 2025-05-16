@@ -1,0 +1,19 @@
+time 1970-01-01T00:00:00Z
+observed_time 2025-05-15T20:42:19.8622536Z
+Body
+
+488 <166>1 2025-05-15T13:42:19-07:00 INA400 LEEF - - - 1.0|Raz-Lee iSecurity|Audit|1.0|MCD0300|usrName=EDIOPR devTime=2025-05-15-13.42.19.436 devTimeFormat=yyyy-MM-dd-HH.mm.ss.SSS source=*LCL-ED850EBLD sev=4 jobName=759738/EDIOPR/ED850EBLD pgmName=CED031 pgmLib=EDI5VMIPGM entryType=CD/C entryDesc=A command was run Sequence_number=0738078059 Port=00000 Name_of_object=RCVMSG Library_name=QSYS Object_type=*CMD Run_from_CL/REXX=Y Command_string=RCVMSG RMV(*NO) MSGDTA(&MSGDTA) MSGID(&MSGID)
+Attributes
+
+log_type ibm-iseries
+net.host.ip 172.23.250.212
+net.host.name WLGOGW01094P02.corp.costco.com
+net.host.port 6005
+net.peer.ip 172.23.250.155
+net.peer.name 172.23.250.155
+net.peer.port 36577
+net.transport IP.TCP
+Resource
+
+host.name WLGOGW01094P02
+os.type windows
