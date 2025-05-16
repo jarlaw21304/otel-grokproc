@@ -4,7 +4,6 @@ import (
     "context"
 
     "go.opentelemetry.io/collector/component"
-    "go.opentelemetry.io/collector/config"
     "go.opentelemetry.io/collector/consumer"
     "go.opentelemetry.io/collector/processor"
 )
@@ -23,10 +22,10 @@ func Factory() processor.Factory {
 
 func createDefaultConfig() component.Config {
     return &Config{
-        Pattern:      "",
-        VendorFormat: "",
-        FieldMap:     map[string]string{},
-        ExtractCEF:   false,
+        Pattern:          "",
+        PatternDirectory: "patterns", // default where your patterns live
+        FieldMap:         map[string]string{},
+        ExtractCEF:       false,
     }
 }
 
@@ -37,7 +36,10 @@ func createLogsProcessor(
     next consumer.Logs,
 ) (processor.Logs, error) {
     pcfg := cfg.(*Config)
-    proc := NewProcessor(pcfg)
+    proc, err := NewProcessor(pcfg)
+    if err != nil {
+        return nil, err
+    }
     return &grokProcProcessor{
         next: next,
         proc: proc,
