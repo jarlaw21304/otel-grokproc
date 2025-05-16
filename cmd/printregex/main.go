@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
+	"os"
 )
 
 func main() {
@@ -25,4 +25,8 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println(expanded)
+
+	// Wrap with negative lookahead or preamble here
+	notMatchPrefix := "^(?!BAD)"
+	fmt.Println(notMatchPrefix + expanded)
 }
