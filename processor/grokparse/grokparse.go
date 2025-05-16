@@ -1,3 +1,5 @@
+
+```go
 package grokparse
 
 import (
@@ -6,10 +8,10 @@ import (
     "strings"
 )
 
-// Patterns must be initialized by calling LoadAllPatternFiles(...).
+// Patterns is populated by the loader at startup.
 var Patterns = map[string]string{}
 
-// Recursively expands pattern references (%{...}) in a Grok pattern string.
+// expandPattern recursively interpolates pattern references.
 func expandPattern(p string, seen map[string]struct{}) string {
     re := regexp.MustCompile(`%{(\w+)}`)
     for {
@@ -34,7 +36,7 @@ func expandPattern(p string, seen map[string]struct{}) string {
     return p
 }
 
-// Compiles a Grok pattern (with named capture groups) to a Go regexp.
+// CompileGrok compiles a Grok pattern into a Go regexp with named groups.
 func CompileGrok(pattern string) (*regexp.Regexp, error) {
     re := regexp.MustCompile(`%{(\w+)(?::([\w_]+))?}`)
     result := re.ReplaceAllStringFunc(pattern, func(s string) string {
@@ -48,8 +50,7 @@ func CompileGrok(pattern string) (*regexp.Regexp, error) {
     return regexp.Compile(result)
 }
 
-// Parses a single log line using the provided Grok pattern.
-// Returns a map from field names to matched strings.
+// ParseLine parses a log line using the given Grok pattern.
 func ParseLine(pattern, logline string) (map[string]string, error) {
     re, err := CompileGrok(pattern)
     if err != nil {
@@ -68,21 +69,7 @@ func ParseLine(pattern, logline string) (map[string]string, error) {
     return out, nil
 }
 
-// Helper for parsing CEF extensions (optional, useful for some logs).
-func ParseCEFExtension(cefExt string) map[string]string {
-    parts := strings.Fields(cefExt)
-    parsed := map[string]string{}
-    for _, part := range parts {
-        if eq := strings.Index(part, "="); eq > 0 {
-            k := part[:eq]
-            v := part[eq+1:]
-            parsed[k] = v
-        }
-    }
-    return parsed
-}
-
-// Map fields according to a provided field mapping.
+// FieldMap enables mapping field names.
 type FieldMap map[string]string
 
 func MapFields(src map[string]string, fmap FieldMap) map[string]string {
@@ -96,3 +83,4 @@ func MapFields(src map[string]string, fmap FieldMap) map[string]string {
     }
     return out
 }
+```
