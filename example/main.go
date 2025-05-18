@@ -7,30 +7,37 @@ import (
 )
 
 func main() {
-    // Step 1: Dynamically load Grok patterns at startup
     err := grokparse.LoadAllPatternFiles("patterns")
     if err != nil {
         log.Fatalf("Failed to load grok patterns: %v", err)
     }
     fmt.Println("Grok patterns loaded successfully.")
 
-    // Step 2: Parse a sample Cisco ASA log using the appropriate pattern name
-    // (Assume ASA302014.grok contains: ASA302014 %{TIMESTAMP_ISO8601:timestamp} %{IP:src_ip} %{IP:dst_ip} %{GREEDYDATA:msg})
-    pattern := "%{ASA302014}"
-    logline := "2023-05-13T10:15:14 192.168.1.1 10.1.1.1 Some test message"
+    asaCodes := []string{"302014", "302013", "106023"} // add all the ASA codes you have
 
-    fields, err := grokparse.ParseLine(pattern, logline)
-    if err != nil {
-        log.Fatalf("Parse error: %v", err)
+    // Replace this with test log lines for each type
+    loglines := []string{
+        "2023-05-13T10:15:14 192.168.1.1 10.1.1.1 Some test message",
+        // ... add more sample logs, one per code
     }
 
-    fmt.Println("Parsed fields:")
-    for k, v := range fields {
-        fmt.Printf("  %s: %s\n", k, v)
+    for i, logline := range loglines {
+        matched := false
+        for _, code := range asaCodes {
+            pattern := fmt.Sprintf("%%{ASA%s}", code)
+            fields, err := grokparse.ParseLine(pattern, logline)
+            if err == nil && len(fields) > 0 {
+                fmt.Printf("Log #%d: Pattern ASA%s matched. Fields:\n", i, code)
+                for k, v := range fields {
+                    fmt.Printf("  %s: %s\n", k, v)
+                }
+                matched = true
+                break
+            }
+        }
+        if !matched {
+            fmt.Printf("Log #%d: No pattern matched!\n", i)
+        }
     }
-
-    // Example: Dynamically choosing the pattern based on extracted or configured Cisco ASA code
-    // code := detectCodeFromLogline(logline) // implement detection as needed
-    // pattern := fmt.Sprintf("%%{ASA%s}", code)
-    // fields, err := grokparse.ParseLine(pattern, logline)
 }
+
