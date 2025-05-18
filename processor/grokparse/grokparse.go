@@ -120,6 +120,13 @@ func ExpandPatternForTest(pattern string) (string, error) {
 }
 
 // GetExpandedRegex returns the expanded regex string for a Grok pattern.
-func GetExpandedRegex(pattern string) (string, error) {
-	return expandPattern(pattern, 0)
+func GetExpandedRegex(patternOrName string) (string, error) {
+	mu.RLock()
+	pat, ok := Patterns[patternOrName]
+	mu.RUnlock()
+	if ok {
+		return expandPattern(pat, 0)
+	}
+	// If not found, try to expand literal pattern
+	return expandPattern(patternOrName, 0)
 }
