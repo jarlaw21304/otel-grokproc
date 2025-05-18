@@ -18,5 +18,5 @@ SYSLOGPARSER %{TIMESTAMP_ISO8601:timestamp} %{IP:src_ip} %{IP:dst_ip} %{GREEDYDA
 
 # Hypothetical CEF format
 CEF \[%{INT:device_id}\] %{WORD:action} %{GREEDYDATA:msg}
-```
+
 
