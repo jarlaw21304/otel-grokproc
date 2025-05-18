@@ -1,3 +1,9 @@
+WORD \b\w+\b
+IPORHOST (?:%{IP}|%{HOSTNAME})
+IP (?:\d{1,3}\.){3}\d{1,3}
+INT (?:[+-]?(?:[0-9]+))
+HOSTNAME \b(?:[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})(?:\.[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})*\b
+GREEDYDATA .*
 ASA302014 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
 ASA302015 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
 ASA302016 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
