@@ -1,0 +1,111 @@
+ASA302014 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302015 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302016 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302017 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302018 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302020 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302021 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302022 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA302023 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+ASA402119 IPSEC: Received an ESP packet \(SPI= 0x%{DATA:spi}, sequence number= 0x%{DATA:seq_num}\) from %{IPORHOST:src_ip} \(%{DATA:src_intf}\) to %{IPORHOST:dst_ip} \(%{DATA:dst_intf}\) that failed authentication.
+ASA402120 IPSEC: Received an ESP packet \(SPI= 0x%{DATA:spi}, sequence number= 0x%{DATA:seq_num}\) from %{IPORHOST:src_ip} \(%{DATA:src_intf}\) to %{IPORHOST:dst_ip} \(%{DATA:dst_intf}\) with invalid destination address.
+ASA402123 IPSEC: Received a protocol packet \(SPI= 0x%{DATA:spi}, sequence number= 0x%{DATA:seq_num}\) from %{IPORHOST:src_ip} \(%{DATA:src_intf}\) to %{IPORHOST:dst_ip} \(%{DATA:dst_intf}\) that was dropped due to IPsec SA not found \(%{DATA:summary}\)
+ASA402124 IPSEC: Received packet with invalid SPI \(SPI= 0x%{DATA:spi}\) from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip}
+ASA402125 IPSEC: Received packet with invalid sequence number \(expected: %{DATA:expected_seq} actual: %{DATA:actual_seq}\) from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip}
+ASA402126 IPSEC: Received replayed packet \(SPI= 0x%{DATA:spi}, sequence number= 0x%{DATA:seq_num}\) from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip}
+ASA105011 %{DATA:summary}
+ASA105012 %{DATA:summary}
+ASA105013 %{DATA:summary}
+ASA105014 %{DATA:summary}
+ASA106015 %{DATA:summary}
+ASA201011 %{DATA:summary}
+ASA201012 %{DATA:summary}
+ASA201013 %{DATA:summary}
+ASA201014 %{DATA:summary}
+ASA201015 %{DATA:summary}
+ASA201016 %{DATA:summary}
+ASA201017 %{DATA:summary}
+ASA201018 %{DATA:summary}
+ASA201019 %{DATA:summary}
+ASA201020 %{DATA:summary}
+ASA211001 %{GREEDYDATA:msg}
+ASA313001 %{GREEDYDATA:msg}
+ASA313004 %{GREEDYDATA:msg}
+ASA313005 %{GREEDYDATA:msg}
+ASA313008 %{GREEDYDATA:msg}
+ASA313009 %{GREEDYDATA:msg}
+ASA313010 %{GREEDYDATA:msg}
+ASA313011 %{GREEDYDATA:msg}
+ASA313012 %{GREEDYDATA:msg}
+ASA313013 %{GREEDYDATA:msg}
+ASA313014 %{GREEDYDATA:msg}
+ASA313015 %{GREEDYDATA:msg}
+ASA313016 %{GREEDYDATA:msg}
+ASA313017 %{GREEDYDATA:msg}
+ASA313018 %{GREEDYDATA:msg}
+ASA313019 %{GREEDYDATA:msg}
+ASA313020 %{GREEDYDATA:msg}
+ASA313021 %{GREEDYDATA:msg}
+ASA313022 %{GREEDYDATA:msg}
+ASA313023 %{GREEDYDATA:msg}
+ASA313024 %{GREEDYDATA:msg}
+ASA313025 %{GREEDYDATA:msg}
+ASA313026 %{GREEDYDATA:msg}
+ASA401006 %{GREEDYDATA:msg}
+ASA402108 %{IPORHOST:src_ip} \(user=%{WORD:user}\) is not allowed to access to %{IPORHOST:dst_ip}
+ASA402109 %{IPORHOST:src_ip} is trying to access protected content on %{IPORHOST:dst_ip}
+ASA402110 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to unauthorized user %{WORD:user}
+ASA402111 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to unknown user
+ASA402112 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to expired user session
+ASA402113 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to policy violation \(user: %{WORD:user}\)
+ASA402114 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to inactive policy
+ASA402115 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to disabled user %{WORD:user}
+ASA402116 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to locked user %{WORD:user}
+ASA402117 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to invalid user credentials
+ASA402118 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to expired user credentials
+ASA402121 Packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} dropped due to untrusted source
+ASA402122 Received a cleartext packet from %{IPORHOST:src_ip} to %{IPORHOST:dst_ip} that was to be encapsulated in (IPsec|IPSec) that was dropped by (IPsec|IPSec) \(%{DATA:summary}\s*\)
+ASA430001 %{GREEDYDATA:msg}
+ASA430002 %{GREEDYDATA:msg}
+ASA430003 %{GREEDYDATA:msg}
+ASA430004 %{GREEDYDATA:msg}
+ASA434001 %{GREEDYDATA:msg}
+ASA434002 %{GREEDYDATA:msg}
+ASA434003 %{GREEDYDATA:msg}
+ASA434004 %{GREEDYDATA:msg}
+ASA501004 %{GREEDYDATA:msg}
+ASA502103 %{GREEDYDATA:msg}
+ASA502104 %{GREEDYDATA:msg}
+ASA502110 %{GREEDYDATA:msg}
+ASA502114 %{GREEDYDATA:msg}
+ASA502115 %{GREEDYDATA:msg}
+ASA502116 %{GREEDYDATA:msg}
+ASA502117 %{GREEDYDATA:msg}
+ASA502128 %{GREEDYDATA:msg}
+ASA510001 %{GREEDYDATA:msg}
+ASA510002 %{GREEDYDATA:msg}
+ASA510003 %{GREEDYDATA:msg}
+ASA510004 %{GREEDYDATA:msg}
+ASA510005 %{GREEDYDATA:msg}
+ASA602303 %{GREEDYDATA:msg}
+ASA602304 %{GREEDYDATA:msg}
+ASA602305 %{GREEDYDATA:msg}
+ASA602306 %{GREEDYDATA:msg}
+ASA602307 %{GREEDYDATA:msg}
+ASA710003 %{GREEDYDATA:msg}
+ASA710005 %{GREEDYDATA:msg}
+ASA710006 %{GREEDYDATA:msg}
+ASA710007 %{GREEDYDATA:msg}
+ASA713254 Group = %{GREEDYDATA:group_name}, Username = %{GREEDYDATA:user_name}, IP = %{IPORHOST:dst_ip}\s*, Invalid %{WORD:protocol} port = %{IPORHOST:dst_port}\s*, valid range is %{GREEDYDATA:port_range} , except port 4500, which is reserved for %{GREEDYDATA}
+ASA715049 (?P<action_details>Send|Received) %{DATA:vendor_id_type} VID
+ASA725006 Device failed SSL handshake with %{WORD} %{DATA:interface_name}\s*:\s*%{IPORHOST:src_ip}\s*/%{INT:src_port}( to %{IPORHOST:dst_ip}\s*/%{INT:dst_port})?
+ASA767001 %{GREEDYDATA:inspect_name}\s*: Dropping an unsupported %{GREEDYDATA} from %{DATA:src_interface_name}\s*:IP %{IPORHOST:src_ip} to %{DATA:dst_interface_name}\s*:IP %{IPORHOST:dst_ip} \(fail-close\)
+ASA769004 UPDATE: ASA image %{GREEDYDATA:src_file_full_path} failed verification, reason: %{GREEDYDATA:summary}
+ASA770001 %{GREEDYDATA:resource} resource allocation is more than the permitted list of %{GREEDYDATA:limit} for this platform. If this condition persists, the ASA will be rebooted
+ASA771002 CLOCK: System clock set, source: %{GREEDYDATA:source} , IP %{IPORHOST:dst_ip} , before: %{DATA:before_time} , after: %{GREEDYDATA:after_time}
+ASA8300003 Failed to send session redistribution message to %{GREEDYDATA:member_name}
+ASA110002 Failed to locate egress interface for( %{WORD}-)?\s*%{WORD:protocol} from %{GREEDYDATA:src_interface_name}\s*:\s*%{DATA:src_ip}\s*/\s*%{INT:src_port} to %{IPORHOST:dst_ip}\s*/\s*%{INT:dst_port}
+ASA210008 LU no xlate for %{IPORHOST:src_ip}(\s*/%{INT:src_port})? %{IPORHOST:dst_ip}(\s*/%{INT:dst_port})?
+ASA413006 %{GREEDYDATA:product_id} Module software version mismatch; slot %{GREEDYDATA:slot_number} is%{GREEDYDATA}version %{GREEDYDATA:running_version}. Slot %{GREEDYDATA}requires %{GREEDYDATA:required_version}
+ASA105503 \((Primary|Secondary|ASA)\) Internal state change from %{GREEDYDATA:previous_state} to %{GREEDYDATA:new_state}
+
