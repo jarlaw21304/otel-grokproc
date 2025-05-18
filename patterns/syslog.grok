@@ -1,21 +1,22 @@
-SYSLOGPARSER %{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{DATA:msg}
+# --- Helper Patterns (define first) ---
 
-# For ASA logs like "(TCP): 192.168.1.1/12345 -> 10.1.1.1/80 msg"
-ASA302014 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
-
-# For syslog with timestamp
-SYSLOGPARSER %{TIMESTAMP_ISO8601:timestamp} %{IP:src_ip} %{IP:dst_ip} %{GREEDYDATA:msg}
-
-# For hypothetical CEF message
-CEF \[%{INT:device_id}\] %{WORD:action} %{GREEDYDATA:msg}
-
-# ...add more as needed
-
-# Helper patterns (define ONCE, up top or in a helpers.grok loaded first)
-WORD \b\w+\b
-IPORHOST (?:%{IP}|%{HOSTNAME})
-IP (?:\d{1,3}\.){3}\d{1,3}
+WORD \w+
 INT (?:[+-]?(?:[0-9]+))
-HOSTNAME \b(?:[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})(?:\.[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})*\b
+IP (?:\d{1,3}\.){3}\d{1,3}
+HOSTNAME (?:[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})(?:\.[a-zA-Z0-9][a-zA-Z0-9\-]{0,62})*
+IPORHOST (?:%{IP}|%{HOSTNAME})
 GREEDYDATA .*
 TIMESTAMP_ISO8601 \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}
+
+# --- Main Patterns ---
+
+# Cisco ASA style
+ASA302014 \(%{WORD:protocol}\): %{IPORHOST:src_ip}/%{INT:src_port} -> %{IPORHOST:dst_ip}/%{INT:dst_port} %{GREEDYDATA:msg}
+
+# Basic syslog format: ISO8601 timestamp + two IPs + message
+SYSLOGPARSER %{TIMESTAMP_ISO8601:timestamp} %{IP:src_ip} %{IP:dst_ip} %{GREEDYDATA:msg}
+
+# Hypothetical CEF format
+CEF \[%{INT:device_id}\] %{WORD:action} %{GREEDYDATA:msg}
+```
+
