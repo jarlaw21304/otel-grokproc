@@ -3,41 +3,46 @@ package main
 import (
     "fmt"
     "log"
-    "otel-grokproc/processor/grokparse"
+
+    "github.com/jarlaw21304/otel-grokproc/processor/grokparse"
 )
 
 func main() {
+    // Step 1: Load Grok patterns from the "patterns" directory
     err := grokparse.LoadAllPatternFiles("patterns")
     if err != nil {
         log.Fatalf("Failed to load grok patterns: %v", err)
     }
     fmt.Println("Grok patterns loaded successfully.")
 
-    asaCodes := []string{"302014", "302013", "106023"} // add all the ASA codes you have
-
-    // Replace this with test log lines for each type
-    loglines := []string{
-        "2023-05-13T10:15:14 192.168.1.1 10.1.1.1 Some test message",
-        // ... add more sample logs, one per code
+    // Step 2: Print expanded regexes for listed Grok pattern names
+    patternNames := []string{
+        "ASA302014",
+        "ASA302013",
+        "ASA106023", // Add or remove as needed
     }
 
-    for i, logline := range loglines {
-        matched := false
-        for _, code := range asaCodes {
-            pattern := fmt.Sprintf("%%{ASA%s}", code)
-            fields, err := grokparse.ParseLine(pattern, logline)
-            if err == nil && len(fields) > 0 {
-                fmt.Printf("Log #%d: Pattern ASA%s matched. Fields:\n", i, code)
-                for k, v := range fields {
-                    fmt.Printf("  %s: %s\n", k, v)
-                }
-                matched = true
-                break
-            }
+    for _, pat := range patternNames {
+        regex, err := grokparse.GetExpandedRegex(pat)
+        if err != nil {
+            fmt.Printf("Pattern %-10s : ERROR: %v\n", pat, err)
+        } else {
+            fmt.Printf("Pattern %-10s : Expanded regex:\n%s\n\n", pat, regex)
         }
-        if !matched {
-            fmt.Printf("Log #%d: No pattern matched!\n", i)
+    }
+
+    // Step 3: Try parsing an example log line
+    logLine := "2023-05-13T10:15:14 192.168.1.1 10.1.1.1 Some test message"
+
+    match, fields, err := grokparse.MatchPattern("ASA302014", logLine)
+    if err != nil {
+        fmt.Printf("Error parsing log: %v\n", err)
+    } else if match {
+        fmt.Printf("Log line matched pattern ASA302014. Fields:\n")
+        for k, v := range fields {
+            fmt.Printf("  %-10s: %v\n", k, v)
         }
+    } else {
+        fmt.Println("Log line did not match pattern ASA302014.")
     }
 }
-
