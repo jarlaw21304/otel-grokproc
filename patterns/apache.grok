@@ -1,0 +1,5 @@
+# Common Log Format
+COMMONAPACHELOG %{IPORHOST:clientip} %{IDENT:ident} %{USER:user} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
+
+# Combined Log Format (includes referrer and user agent)
+COMBINEDAPACHELOG %{COMMONAPACHELOG} "%{DATA:referrer}" "%{DATA:agent}"
