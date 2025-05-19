@@ -1,4 +1,4 @@
-package otelgrokproc
+package old
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"github.com/jarlaw21304/otel-grokproc/processor/grokparse"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
-	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"otel-grokproc/processor/grokparse"
 )
