@@ -97,7 +97,9 @@ func ParseLine(pattern, line string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	re, err := regexp.Compile("^" + expanded + "$")
+	// Accept optional trailing whitespace (newline, carriage return)
+	fmt.Printf("[Regex compile] ^%s\\s*$\n", expanded)
+	re, err := regexp.Compile("^" + expanded + "\\s*$")
 	if err != nil {
 		return nil, fmt.Errorf("pattern compile failed: %w", err)
 	}
