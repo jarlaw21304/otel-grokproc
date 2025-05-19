@@ -10,7 +10,13 @@ receivers:
   filelog/asa:
     include: [ "./asa.log" ]
     start_at: beginning
+  filelog/cisco_ise:
+    include: [ "./cisco_ise.log" ]
+    start_at: beginning
 
+    filelog/cisco_ios:
+      include: [ "./cisco_ios.log" ]
+      start_at: beginning
 processors:
   # For Apache logs (combined log format)
   apache_grok:
@@ -30,7 +36,17 @@ processors:
       src: "source.ip"
       dst: "destination.ip"
     extract_cef: true
+  cisco_ise_grok:
+    # Choose the most specific match for your Cisco ISE logs,
+    # or switch between CISCO_ISE_SYSLOG_1..5 based on your device's format.
+    pattern: "%{CISCO_ISE_SYSLOG_1}"
+    pattern_directory: ./patterns
 
+    cisco_ios_grok:
+      # Pick the pattern that matches your Cisco IOS logs;
+      # alternatives: CISCO_IOS_SYSLOG1, CISCO_IOS_SYSLOG2, etc.
+      pattern: "%{CISCO_IOS_SYSLOG1}"
+      pattern_directory: ./patterns
 exporters:
   logging:
     loglevel: debug
@@ -52,3 +68,12 @@ service:
       processors: [grokproc]
       exporters: [logging]
 
+    logs/cisco_ise:
+      receivers: [ filelog/cisco_ise ]
+      processors: [ cisco_ise_grok ]
+      exporters: [ logging ]
+
+    logs/cisco_ios:
+        receivers: [ filelog/cisco_ios ]
+        processors: [ cisco_ios_grok ]
+        exporters: [ logging ]

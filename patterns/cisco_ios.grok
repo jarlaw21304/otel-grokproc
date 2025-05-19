@@ -1,0 +1,66 @@
+
+# Cisco IOS Grok Pattern File
+
+# DOT1X-5-FAIL (audit session failure)
+CISCO_IOS_DOT1X_FAIL %{GREEDYDATA:description} AuditSessionID %{WORD:auditid}( Username: %{GREEDYDATA:src_user_name})?
+
+# MAC movement event
+CISCO_IOS_MAC_MOVE %{GREEDYDATA} MAC %{GREEDYDATA:src_mac} moved%{GREEDYDATA}
+
+# Basic IP address only
+CISCO_IOS_IPONLY %{IP:src_ip}
+
+# CRLHTTPFETCHREDIR
+CISCO_IOS_CRL_REQ CRL Request for trustpoint %{GREEDYDATA} %{INT:status_code}%{GREEDYDATA} %{URI:url}
+
+# Chassis data
+CISCO_IOS_CHASSIS Chassis %{DATA:Chassis_data}: %{GREEDYDATA}
+
+# Syslog event tag extraction
+CISCO_IOS_CISCO_TAG ^%{WORD:cisco_facility}-%{INT:cisco_severity}-%{WORD:cisco_mnemonic}$
+
+# Netconf/tcp session event, with sequence
+CISCO_IOS_NETCONF '%{TIMESTAMP_ISO8601:ts} %{HOSTNAME:target_host}-%{INT} %{WORD:process_name} %{INT:pid} - \[meta sequenceId=\"%{INT:sequence_id}\"\] netconf id=%{INT:session_id} new tcp session for user \"%{USERNAME:src_userid}\" from %{IP:src_ip}'
+
+# Full syslog event line with lots of fields (adapt these as needed)
+CISCO_IOS_SYSLOG1 "<%{INT}>%{INT}: %{HOSTNAME:inter_host}:"
+CISCO_IOS_SYSLOG2 "<%{INT}>%{SYSLOGTIMESTAMP} %{HOSTNAME:inter_host} %{GREEDYDATA:desc} %{INT} %{INT} %{INT} %{TIMESTAMP_ISO8601:date_time} %{DATA:zone} %{INT} %{INT:pid} %{DATA:severity} %{GREEDYDATA:sec_desc}ConfigVersionId=%{INT:ConfigVersionId}, Device IP Address=%{IP:src_ip}, DestinationIPAddress=%{IP:dst_ip}, DestinationPort=%{INT:dst_port}, UserName=%{DATA:src_username}, Protocol=%{DATA:protocol}, NetworkDeviceName=%{DATA:source_facility}, User-Name=%{DATA:src_userid}, NAS-IP-Address=%{IP:nas_ip}, NAS-Port=%{INT:nas_port}, Service-Type=%{DATA:service}, Framed-MTU=%{INT:framed}, State=%{DATA:state}SessionID=%{DATA:session_id};42SessionID=%{DATA:session_id2};, Called-Station-ID=%{DATA:calledId}, Calling-Station-ID=%{DATA:calledId2}, NAS-Identifier=%{DATA:nas_identity}, NAS-Port-Type=%{DATA:nastype}, NetworkDeviceProfileName=%{DATA:NetworkDeviceProfileName}, NetworkDeviceProfileId=%{DATA:NetworkDeviceProfileId}, IsThirdPartyDeviceFlow=%{DATA:thirdparty}, RadiusFlowType=%{DATA:flowtype}, SSID=%{DATA:ssid}, Aruba-Essid-Name=%{DATA:essid}, Aruba-Location-Id=%{DATA:loc_id}, Aruba-Device-Type=%{DATA:dev_type}, Aruba-AP-Group=%{GREEDYDATA:group}"
+
+CISCO_IOS_SYSLOG3 "^<\\d+>\\d+: (\\*)?%{SYSLOGTIMESTAMP:timestamp} CET: %%{DATA:cisco_tag}:\\s*%{GREEDYDATA:cisco_message}"
+CISCO_IOS_SYSLOG4 "<%{INT}>%{INT}:\\s+%{DATA:target_host}:\\s+\\*%{SYSLOGTIMESTAMP}:\\s+%{DATA:cisco_tag}:%{GREEDYDATA:cisco_message}"
+CISCO_IOS_SYSLOG5 "<%{INT}>%{INT}:\\s+%{DATA:target_host}:\\s+\\.%{SYSLOGTIMESTAMP}:\\s+%{DATA:cisco_tag}:%{GREEDYDATA:cisco_message}"
+CISCO_IOS_SYSLOG6 "<%{INT}>%{SYSLOGTIMESTAMP:timestamp} %{IP:src_ip} %%{WORD:source_facility}-%{INT:cisco_severity}-%{WORD:status_msg}: %{GREEDYDATA:cisco_message}"
+
+CISCO_IOS_SYSLOG7 "<%{INT}>%{SYSLOGTIMESTAMP:timestamp} %{IP:src_ip} %{DATA} %%{WORD:source_facility}-%{INT:cisco_severity}-%{WORD:status_msg}: %{GREEDYDATA:reason}"
+
+CISCO_IOS_SYSLOG8 "^<\\d+>\\d+: (\\*)?%{SYSLOGTIMESTAMP:timestamp}: %%{DATA:cisco_tag}:\\s*%{GREEDYDATA:cisco_message}"
+
+CISCO_IOS_SYSLOG9 "<%{INT}>%{SYSLOGTIMESTAMP} %{HOSTNAME:target_host} %{DATA:cisco_tag} %{DATA:product_log_id} %{INT} %{INT} %{TIMESTAMP_ISO8601:ts} %{DATA} %{DATA} %{INT:pid} %{DATA:severity} %{DATA:product_event_type}, %{GREEDYDATA:kv_data}"
+CISCO_IOS_SYSLOG10 "<%{INT}>%{SYSLOGTIMESTAMP} %{HOSTNAME:target_host} %{DATA:cisco_tag} %{DATA:product_log_id} %{INT} %{INT}  %{GREEDYDATA:kv_data}"
+
+# Various inner message parsing patterns
+CISCO_IOS_HOST_ORIGEN %{GREEDYDATA}HOST=/%{GREEDYDATA:intermediary_ip}
+CISCO_IOS_PRINCIPAL_USER1 User:%{USERNAME:src_user_id} %{GREEDYDATA}
+CISCO_IOS_PRINCIPAL_USER2 User\s+%{USERNAME:dst_user}\s+%{GREEDYDATA}
+CISCO_IOS_PRINCIPAL_USER3 %{GREEDYDATA}\s+%{DATA:dst_user}\s+%{IP}\s+%{GREEDYDATA}
+
+CISCO_IOS_COMMAND1 %{GREEDYDATA}command:%{DATA:command}, HOST%{GREEDYDATA}
+CISCO_IOS_COMMAND2 %{GREEDYDATA}command:%{GREEDYDATA:command}
+
+CISCO_IOS_TARGET_USER1 %{GREEDYDATA}username %{USERNAME:dst_user} %{GREEDYDATA}
+CISCO_IOS_TARGET_USER2 %{GREEDYDATA}username %{USERNAME:dst_user}
+
+CISCO_IOS_TLS client %{DATA:tls_cipher} server %{GREEDYDATA:tls_client}
+
+CISCO_IOS_LOGGING_TO Logging to host %{IP:dst_ip} port %{INT:dst_port}(?: \(%{DATA}\))? %{GREEDYDATA:reason}
+CISCO_IOS_IPSEC_REPLAY %{DATA}: %{DATA}: QFP:%{DATA} Thread:%{DATA} TS:%{DATA} %%{DATA:cisco_tag}: (?P<description>IPSec SA receives anti-replay error)\s+DP Handle %{INT}  src_addr %{IP:src_ip}  dest_addr %{IP:dst_ip}  SPI %{DATA}
+CISCO_IOS_IPSEC_REPLAY2 %{DATA} %%{DATA:cisco_tag}: (?P<description>IPSec SA receives anti-replay error, DP Handle %{INT}, src_addr %{IP:src_ip}, dest_addr %{IP:dst_ip}, SPI %{GREEDYDATA})
+CISCO_IOS_IPSEC_HMAC %{DATA} %%{DATA:cisco_tag}: (?P<description>IPSec SA receives HMAC error, DP Handle %{INT}, src_addr %{IP:src_ip}, dest_addr %{IP:dst_ip}, SPI %{GREEDYDATA})
+CISCO_IOS_RECVD_PKT decaps: rec'd IPSEC packet has invalid spi for destaddr=%{IP:dst_ip}, prot=%{INT}, spi=%{DATA}, srcaddr=%{IP:src_ip}%{GREEDYDATA}
+
+CISCO_IOS_IKE_SANITY IKE message from %{IP:src_ip} failed its sanity check or is malformed
+CISCO_IOS_IKE_GENERIC IKE message from %{IP:src_ip}%{GREEDYDATA}
+CISCO_IOS_IKE_NOT_ENC IKE packet from %{IP:src_ip} was not encrypted and it should've been
+CISCO_IOS_IKE_MODE_FAIL Processing of %{DATA} mode failed with peer at %{IP:src_ip}
+
+CISCO_IOS_CONFIGURED_FROM Configured from %{DATA} by %{DATA:dst_user} on vty0 \(%{IP:src_ip}\)

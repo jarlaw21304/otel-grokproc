@@ -1,0 +1,4 @@
+﻿LogFile,LogLine,RequiredFields
+apache.log,"127.0.0.1 - frank [10/May/2024:11:22:33 -0700] GET /apache_pb.gif HTTP/1.0 200 2326","clientip,user"
+cisco_ise.log,"<134>123: ise01.corp.lan: 2024-05-10 14:13:21 UTC: AuthZ: Passed authentication [User: alice] [Device: 00:11:22:33:44:55] [Policy: Default]","User,Device,Policy"
+cisco_ios.log,"<189>123: ios-sw01.corp.lan:","inter_host"

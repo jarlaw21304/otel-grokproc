@@ -1,0 +1,32 @@
+
+# Cisco ISE Grok Pattern File
+
+# Cisco ISE syslog main patterns
+CISCO_ISE_NTP_3SERVER NTP Server 1=%{DATA:ntp_server_1},.*NTP Server 2=%{DATA:ntp_server_2}\\\\.*NTP Server 3=%{DATA:ntp_server_3}\\\\
+CISCO_ISE_NTP_2SERVER NTP Server 1=%{DATA:ntp_server_1}.*NTP Server 2=%{DATA:ntp_server_2}
+CISCO_ISE_NTP_1SERVER NTP Server 1=%{DATA:ntp_server_1}
+
+CISCO_ISE_MSGTEXT %{GREEDYDATA:description} : %{GREEDYDATA:msg_details}
+
+CISCO_ISE_SYSLOG_1 \<%{INT:r_priority}>%{INT:r_msg_id}: %{IPORHOST:r_ip_or_host}: %{DATA:r_datetime} UTC: %{NOTSPACE:r_cat_name}: %{DATA:msg_text} \[%{GREEDYDATA:kv_data}\]
+CISCO_ISE_SYSLOG_2 \<%{INT:r_priority}>%{INT:r_msg_id}: %{IPORHOST:r_ip_or_host}:( %{INT}:)? %{SYSLOGTIMESTAMP:r_datetime} %{WORD:timezone}: %{NOTSPACE:r_cat_name}: %{DATA:msg_text} \[%{GREEDYDATA:kv_data}\]
+CISCO_ISE_SYSLOG_3 \<%{INT:r_priority}>%{INT:r_msg_id}: %{IPORHOST:r_ip_or_host}: %{SYSLOGTIMESTAMP:r_datetime}: %{NOTSPACE:r_cat_name}: %{DATA:msg_text} \[%{GREEDYDATA:kv_data}\]
+CISCO_ISE_SYSLOG_4 \<%{INT:r_priority}>%{SYSLOGTIMESTAMP:r_datetime}: %{NOTSPACE:r_cat_name}: %{DATA:msg_text} \[%{GREEDYDATA:kv_data}\]
+CISCO_ISE_SYSLOG_5 \<%{INT:r_priority}>%{DATA:r_datetime} %{TIME} %{IPORHOST:r_ip_or_host} %{GREEDYDATA:msg_text}
+
+CISCO_ISE_SUPPLICANT Misconfigured Supplicant Detected with EndpointID=%{DATA:endpoint_id}( from user=%{USERNAME:username}| is fixed)
+
+CISCO_ISE_OPMSG_CONN Connection created from %{IP:source_ip}:%{NUMBER:source_port} to  %{IP:target_ip}:%{NUMBER:target_port}
+
+CISCO_ISE_ISELOCAL %{IP:ise_ip}:%{NUMBER:ise_port}
+
+CISCO_ISE_STEPDATA4 StepData=4=(?P<ad_identifier>\S[^\ ,]+)
+
+CISCO_ISE_MSGATTRS MESSAGE=%{DATA} %{DATA} %{DATA:threshold} = %{DATA:threshold_value},%{DATA:used_space} = %{DATA:used_space_value},
+
+# These patterns are referenced inside your config or mutation blocks:
+# - %{USERNAME}
+# - %{IP}
+# - %{MAC}
+# - %{SYSLOGTIMESTAMP} (usually pre-defined in grok libs)
+
