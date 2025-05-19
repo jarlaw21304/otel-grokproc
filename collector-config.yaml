@@ -1,0 +1,54 @@
+receivers:
+  filelog/apache:
+    include: [ "./apache.log" ]
+    start_at: beginning
+
+  filelog/syslog:
+    include: [ "./syslog.log" ]
+    start_at: beginning
+
+  filelog/asa:
+    include: [ "./asa.log" ]
+    start_at: beginning
+
+processors:
+  # For Apache logs (combined log format)
+  apache_grok:
+    pattern: "%{COMBINEDAPACHELOG}"
+    pattern_directory: ./patterns
+
+  # For Syslog messages
+  syslog_grok:
+    pattern: "%{SYSLOGBASE}"
+    pattern_directory: ./patterns
+
+  # For your ASA302014 pattern with field map and extract_cef
+  grokproc:
+    pattern: "%{ASA302014}"
+    pattern_directory: ./patterns
+    field_map:
+      src: "source.ip"
+      dst: "destination.ip"
+    extract_cef: true
+
+exporters:
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    logs/apache:
+      receivers: [filelog/apache]
+      processors: [apache_grok]
+      exporters: [logging]
+
+    logs/syslog:
+      receivers: [filelog/syslog]
+      processors: [syslog_grok]
+      exporters: [logging]
+
+    logs/asa:
+      receivers: [filelog/asa]
+      processors: [grokproc]
+      exporters: [logging]
+
