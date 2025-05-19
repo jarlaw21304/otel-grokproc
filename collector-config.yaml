@@ -1,28 +1,33 @@
 receivers:
   filelog/apache:
-    include: [ "./apache.log" ]
+    include: [ "./test/apache.log" ]
     start_at: beginning
 
   filelog/syslog:
-    include: [ "./syslog.log" ]
+    include: [ "./test/syslog.log" ]
     start_at: beginning
 
   filelog/asa:
-    include: [ "./asa.log" ]
+    include: [ "./test/asa.log" ]
+    start_at: beginning
+
+  filelog/cisco_ise:
+    include: [ "./test/cisco_ise.log" ]
+    start_at: beginning
+
+  filelog/cisco_ios:
+    include: [ "./test/cisco_ios.log" ]
     start_at: beginning
 
 processors:
-  # For Apache logs (combined log format)
   apache_grok:
     pattern: "%{COMBINEDAPACHELOG}"
     pattern_directory: ./patterns
 
-  # For Syslog messages
   syslog_grok:
     pattern: "%{SYSLOGBASE}"
     pattern_directory: ./patterns
 
-  # For your ASA302014 pattern with field map and extract_cef
   grokproc:
     pattern: "%{ASA302014}"
     pattern_directory: ./patterns
@@ -31,6 +36,14 @@ processors:
       dst: "destination.ip"
     extract_cef: true
 
+  cisco_ise_grok:
+    pattern: "%{CISCO_ISE_SYSLOG_1}"
+    pattern_directory: ./patterns
+
+  cisco_ios_grok:
+    pattern: "%{CISCO_IOS_SYSLOG1}"
+    pattern_directory: ./patterns
+
 exporters:
   logging:
     loglevel: debug
@@ -38,17 +51,26 @@ exporters:
 service:
   pipelines:
     logs/apache:
-      receivers: [filelog/apache]
-      processors: [apache_grok]
-      exporters: [logging]
+      receivers: [ filelog/apache ]
+      processors: [ apache_grok ]
+      exporters: [ logging ]
 
     logs/syslog:
-      receivers: [filelog/syslog]
-      processors: [syslog_grok]
-      exporters: [logging]
+      receivers: [ filelog/syslog ]
+      processors: [ syslog_grok ]
+      exporters: [ logging ]
 
     logs/asa:
-      receivers: [filelog/asa]
-      processors: [grokproc]
-      exporters: [logging]
+      receivers: [ filelog/asa ]
+      processors: [ grokproc ]
+      exporters: [ logging ]
 
+    logs/cisco_ise:
+      receivers: [ filelog/cisco_ise ]
+      processors: [ cisco_ise_grok ]
+      exporters: [ logging ]
+
+    logs/cisco_ios:
+      receivers: [ filelog/cisco_ios ]
+      processors: [ cisco_ios_grok ]
+      exporters: [ logging ]
