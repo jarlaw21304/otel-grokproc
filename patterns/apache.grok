@@ -1,5 +1,23 @@
-# Common Log Format
-COMMONAPACHELOG %{IPORHOST:clientip} %{IDENT:ident} %{USER:user} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
+# ===============
+# Apache Grok Patterns (Enhanced)
+# ===============
 
-# Combined Log Format (includes referrer and user agent)
+# Common Log Format: e.g.
+# 127.0.0.1 - frank [10/May/2024:11:22:33 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+COMMONAPACHELOG "%{IPORHOST:clientip}" "%{DATA:ident}" "%{DATA:user}" \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP"%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
+
+# Combined Log Format: e.g.
+# 127.0.0.1 - frank [10/May/2024:11:22:33 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
 COMBINEDAPACHELOG %{COMMONAPACHELOG} "%{DATA:referrer}" "%{DATA:agent}"
+
+# Flexible pattern: Accepts missing user/ident fields (sometimes written as '-')
+APACHELOG_FLEX %{IPORHOST:clientip} (?:%{DATA:ident}|-) (?:%{DATA:user}|-) \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP"{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)(?: "%{DATA:referrer}" "%{DATA:agent}")?
+
+# Common Log Format: Accepts quoted or unquoted requests (for test line compatibility)
+COMMONAPACHELOG %{IPORHOST:clientip} %{DATA:ident} %{DATA:user} \[%{HTTPDATE:timestamp}\] "?%{WORD:verb} %{NOTSPACE:request}(?: HTTP"%{NUMBER:httpversion})?"? %{NUMBER:response} (?:%{NUMBER:bytes}|-)
+
+# Combined Log Format (retains quoted referrer and agent)
+COMBINEDAPACHELOG %{COMMONAPACHELOG} "%{DATA:referrer}" "%{DATA:agent}"
+
+# Optional: Flexible pattern (for logs missing ident and user, though not needed for current test)
+APACHELOG_FLEX %{IPORHOST:clientip} (?:%{DATA:ident}|-) (?:%{DATA:user}|-) \[%{HTTPDATE:timestamp}\] "?%{WORD:verb} %{NOTSPACE:request}(?: HTTP"%{NUMBER:httpversion})?"? %{NUMBER:response} (?:%{NUMBER:bytes}|-)(?: "%{DATA:referrer}" "%{DATA:agent}")?

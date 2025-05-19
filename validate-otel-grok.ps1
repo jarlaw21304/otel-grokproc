@@ -50,8 +50,12 @@ $p = Start-Process -FilePath $OtelExe -ArgumentList "--config", $OtelConfig `
 Start-Sleep -Seconds 8
 
 if ($null -ne $p) {
-    try { Stop-Process -Id $p.Id -Force }
-    catch { Write-Host "Collector process was not running or already exited." -ForegroundColor Yellow }
+    if (Get-Process -Id $p.Id -ErrorAction SilentlyContinue) {
+        try { Stop-Process -Id $p.Id -Force }
+        catch { Write-Host "Collector process could not be stopped or was already exited." -ForegroundColor Yellow }
+    } else {
+        Write-Host "Collector process was already exited." -ForegroundColor Yellow
+    }
 }
 
 # Merge stdout and stderr

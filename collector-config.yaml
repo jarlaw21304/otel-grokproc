@@ -1,76 +1,88 @@
-receivers:
-  filelog/apache:
-    include: [ "./test/apache.log" ]
-    start_at: beginning
+  receivers:
+    filelog/apache:
+      include: [ ./test/apache.log ]
+      start_at: beginning
 
-  filelog/syslog:
-    include: [ "./test/syslog.log" ]
-    start_at: beginning
+    filelog/cisco_ise:
+      include: [ ./test/cisco_ise.log ]
+      start_at: beginning
 
-  filelog/asa:
-    include: [ "./test/asa.log" ]
-    start_at: beginning
+    filelog/cisco_ios:
+      include: [ ./test/cisco_ios.log ]
+      start_at: beginning
 
-  filelog/cisco_ise:
-    include: [ "./test/cisco_ise.log" ]
-    start_at: beginning
+    filelog/asa:
+      include: [ ./test/asa.log ]
+      start_at: beginning
 
-  filelog/cisco_ios:
-    include: [ "./test/cisco_ios.log" ]
-    start_at: beginning
+  processors:
+    apache_grok:
+      type: grok
+      patterns:
+        - "%{COMBINEDAPACHELOG}"
+        - "%{COMMONAPACHELOG}"
+        - "%{APACHELOG_FLEX}"
+      pattern_directory: "./patterns"
 
-processors:
-  apache_grok:
-    pattern: "%{COMBINEDAPACHELOG}"
-    pattern_directory: ./patterns
+    cisco_ise_grok:
+      type: grok
+      patterns:
+        - "%{CISCO_ISE_AUTHZ_RESULT}"
+        - "%{CISCO_ISE_NTP_3SERVER}"
+        - "%{CISCO_ISE_NTP_2SERVER}"
+        - "%{CISCO_ISE_NTP_1SERVER}"
+        - "%{CISCO_ISE_KV}"
+        - "%{CISCO_ISE_SUPPLICANT}"
+        - "%{CISCO_ISE_MSG}"
+        - "%{CISCO_ISE_ALT_DATETIME}"
+        - "%{CISCO_ISE_CONN}"
+      pattern_directory: "./patterns"
 
-  syslog_grok:
-    pattern: "%{SYSLOGBASE}"
-    pattern_directory: ./patterns
+    cisco_ios_grok:
+      type: grok
+      patterns:
+        - "%{CISCO_IOS_SYSLOG_HOST_ONLY}"
+        - "%{CISCO_IOS_DOT1X_FAIL}"
+        - "%{CISCO_IOS_MAC_MOVE}"
+        - "%{CISCO_IOS_IPONLY}"
+        - "%{CISCO_IOS_CRL_REQ}"
+        - "%{CISCO_IOS_CHASSIS}"
+        - "%{CISCO_IOS_CISCO_TAG}"
+        - "%{CISCO_IOS_NETCONF}"
+        - "%{CISCO_IOS_SYSLOG1}"
+        - "%{CISCO_IOS_SYSLOG2}"
+        - "%{CISCO_IOS_SYSLOG3}"
+        - "%{CISCO_IOS_SIMPLE_SYSLOG}"
+      pattern_directory: "./patterns"
 
-  grokproc:
-    pattern: "%{ASA302014}"
-    pattern_directory: ./patterns
-    field_map:
-      src: "source.ip"
-      dst: "destination.ip"
-    extract_cef: true
+    grok_asa:
+      type: grok
+      pattern: "%{ASA302014}"
+      pattern_directory: "./patterns"
 
-  cisco_ise_grok:
-    pattern: "%{CISCO_ISE_SYSLOG_1}"
-    pattern_directory: ./patterns
+  exporters:
+    logging:
+      loglevel: debug
 
-  cisco_ios_grok:
-    pattern: "%{CISCO_IOS_SYSLOG1}"
-    pattern_directory: ./patterns
+  service:
+    pipelines:
+      logs/apache:
+        receivers: [filelog/apache]
+        processors: [apache_grok]
+        exporters: [logging]
 
-exporters:
-  logging:
-    loglevel: debug
+      logs/cisco_ise:
+        receivers: [filelog/cisco_ise]
+        processors: [cisco_ise_grok]
+        exporters: [logging]
 
-service:
-  pipelines:
-    logs/apache:
-      receivers: [ filelog/apache ]
-      processors: [ apache_grok ]
-      exporters: [ logging ]
+      logs/cisco_ios:
+        receivers: [filelog/cisco_ios]
+        processors: [cisco_ios_grok]
+        exporters: [logging]
 
-    logs/syslog:
-      receivers: [ filelog/syslog ]
-      processors: [ syslog_grok ]
-      exporters: [ logging ]
+      logs/asa:
+        receivers: [filelog/asa]
+        processors: [grok_asa]
+        exporters: [logging]
 
-    logs/asa:
-      receivers: [ filelog/asa ]
-      processors: [ grokproc ]
-      exporters: [ logging ]
-
-    logs/cisco_ise:
-      receivers: [ filelog/cisco_ise ]
-      processors: [ cisco_ise_grok ]
-      exporters: [ logging ]
-
-    logs/cisco_ios:
-      receivers: [ filelog/cisco_ios ]
-      processors: [ cisco_ios_grok ]
-      exporters: [ logging ]
