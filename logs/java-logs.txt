@@ -1,15 +1,1 @@
-Log
-
-time	1970-01-01T00:00:00Z
-observed_time	2025-05-20T18:16:13.634504973Z
-Body
-
 2025-05-20 18:16:13,463 [WebContainer : 5 ] INFO c.c.s.p.PaymentInstantCreditComponentImpl - heartbeat(true)
-Attributes
-
-log.file.name	payment-instant-credit-service-v1.2.lapcpp01094d01_cell01.lapcpp01094d01Node01.entServices01.log
-log_type	log_type=costco-java-services|index=java_services|sourcetype=application.service.javalog
-
-Resource
-host.name	lapcpp01094d01
-os.type	linux
