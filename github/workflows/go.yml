@@ -11,12 +11,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-      - name: Build
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Build all packages
         run: go build ./...
-      - name: Test
+
+      - name: Build CLI tools
+        run: |
+          go build -o grok2regex ./cmd/grok2regex/
+          go build -o grok2regex-csv ./cmd/grok2regex-csv/
+
+      - name: Test (unit and integration)
         run: go test -v ./...
 
+      # Optional smoke test for CLI tools (ensure they run)
+      - name: Smoke test grok2regex
+        run: ./grok2regex <<< "%{COMBINEDAPACHELOG}" || true
+
+      - name: Smoke test grok2regex-csv
+        run: ./grok2regex-csv || true
+
+      # Optionally: Upload generated CSV as artifact
+      - name: Upload pattern export (CSV)
+        uses: actions/upload-artifact@v4
+        with:
+          name: grok_patterns_export.csv
+          path: grok_patterns_export.csv
+        if: success()
