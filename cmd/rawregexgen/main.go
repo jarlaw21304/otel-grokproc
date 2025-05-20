@@ -1,5 +1,3 @@
-
-```go
 package main
 
 import (
@@ -105,4 +103,3 @@ func main() {
 		fmt.Println("Warning: regex did not yield all fields")
 	}
 }
-```
