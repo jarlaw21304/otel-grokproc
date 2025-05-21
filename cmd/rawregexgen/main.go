@@ -1,136 +1,281 @@
+// cmd/rawregexgen/main.go
 package main
 
 import (
 	"bufio"
-	"encoding/json"
+	"encoding/csv"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
-type RegexPattern struct {
-	File       string   `json:"file"`
-	Line       string   `json:"line"`
-	Regex      string   `json:"regex"`
-	GroupNames []string `json:"group_names"`
+/*
+   Purpose
+   -------
+   • Scan every .log / .txt file in ./logs
+   • Detect the Java-style log format you showed (date time [ctx] LEVEL class - method(args))
+   • Otherwise build a best-effort generic regex by turning dates, times, UUIDs and numbers
+     into named capture groups
+   • Export patterns in a CSV file for easy copying into Go code
+*/
+
+// -----------------------------------------------------------------------------
+// data structures
+// -----------------------------------------------------------------------------
+
+type Pattern struct {
+	File       string   // log file the example came from
+	Line       string   // representative line
+	Regex      string   // Go-ready raw-string literal
+	GroupNames []string // capture names in order
 }
 
-func regexify(line string) (string, []string) {
-	groupNames := []string{}
-	i := 0
-
-	// Named group pattern builder
-	named := func(name, pat string) string {
-		groupNames = append(groupNames, name)
-		return fmt.Sprintf("(?P<%s>%s)", name, pat)
-	}
-
-	// Date (date only)
-	line = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("date%d", i), `\d{4}-\d{2}-\d{2}`)
-	})
-
-	// Time (with comma ms)
-	line = regexp.MustCompile(`\d{2}:\d{2}:\d{2},\d{3}`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("time%d", i), `\d{2}:\d{2}:\d{2},\d{3}`)
-	})
-
-	// Time (with dot ms, e.g., RFC3339 nano)
-	line = regexp.MustCompile(`\d{2}:\d{2}:\d{2}\.\d+`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("timeDot%d", i), `\d{2}:\d{2}:\d{2}\.\d+`)
-	})
-
-	// Bracketed text (e.g. [WebContainer : 5])
-	line = regexp.MustCompile(`
-$$
-[^
-$$
-]+\]`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("bracket%d", i), `[^\]]+`)
-	})
-
-	// Loglevel (uppercase word)
-	line = regexp.MustCompile(`\b(INFO|WARN|DEBUG|ERROR|TRACE|FATAL|SEVERE|NOTICE|CRITICAL)\b`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("level%d", i), `[A-Z]+`)
-	})
-
-	// Classnames, hosts, or dotted identifiers
-	line = regexp.MustCompile(`[a-zA-Z0-9_]+\.[\w\.]+`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("dotted%d", i), `[\w\.]+`)
-	})
-
-	// Parenthesis content
-	line = regexp.MustCompile(`$[^$]*\)`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("paren%d", i), `.*?`)
-	})
-
-	// IP addresses (v4)
-	line = regexp.MustCompile(`\b\d{1,3}(?:\.\d{1,3}){3}\b`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("ip%d", i), `\d{1,3}(?:\.\d{1,3}){3}`)
-	})
-
-	// Integers
-	line = regexp.MustCompile(`\b\d+\b`).ReplaceAllStringFunc(line, func(_ string) string {
-		i++
-		return named(fmt.Sprintf("int%d", i), `\d+`)
-	})
-
-	// Leave other text as-is, but escape regex special chars, except inside groups!
-	specials := `. * ? ^ $ ( ) = ! < > : -`
-	for _, s := range strings.Split(specials, " ") {
-		if s != "" {
-			line = strings.ReplaceAll(line, s, `\`+s)
-		}
-	}
-	return "^" + line + "$", groupNames
-}
+// -----------------------------------------------------------------------------
+// main
+// -----------------------------------------------------------------------------
 
 func main() {
-	logDir := "./logs"
-	var patterns []RegexPattern
+	const logDir = "./logs"
 
-	files, _ := os.ReadDir(logDir)
-	for _, file := range files {
-		if !file.IsDir() && (strings.HasSuffix(file.Name(), ".log") || strings.HasSuffix(file.Name(), ".txt")) {
-			f, err := os.Open(filepath.Join(logDir, file.Name()))
-			if err != nil {
-				continue
-			}
-			defer f.Close()
+	// create example if ./logs is missing so the user has something to test with
+	if err := seedExampleLogs(logDir); err != nil {
+		fmt.Fprintln(os.Stderr, "seed:", err)
+		return
+	}
 
-			scanner := bufio.NewScanner(f)
-			for scanner.Scan() {
-				line := scanner.Text()
-				regex, groupNames := regexify(line)
-				patterns = append(patterns, RegexPattern{
-					File:       file.Name(),
-					Line:       line,
-					Regex:      regex,
-					GroupNames: groupNames,
-				})
-			}
+	patterns, err := collectPatterns(logDir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	if len(patterns) == 0 {
+		fmt.Println("no patterns discovered")
+		return
+	}
+
+	// stable sort
+	sort.Slice(patterns, func(i, j int) bool {
+		if patterns[i].File == patterns[j].File {
+			return patterns[i].Line < patterns[j].Line
+		}
+		return patterns[i].File < patterns[j].File
+	})
+
+	// Export to CSV
+	csvFile, err := os.Create("log_regexes.csv")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "create csv:", err)
+		return
+	}
+	defer csvFile.Close()
+
+	csvWriter := csv.NewWriter(csvFile)
+	defer csvWriter.Flush()
+
+	// Write header
+	if err := csvWriter.Write([]string{"File", "Sample Line", "Go Regex", "Group Names"}); err != nil {
+		fmt.Fprintln(os.Stderr, "csv write header:", err)
+		return
+	}
+
+	// Write patterns
+	for _, p := range patterns {
+		// Prepare the Go regex string - ready to be used with backticks in code
+		goRegex := p.Regex
+
+		// Join group names with commas
+		groupNamesStr := strings.Join(p.GroupNames, ", ")
+
+		if err := csvWriter.Write([]string{p.File, p.Line, goRegex, groupNamesStr}); err != nil {
+			fmt.Fprintln(os.Stderr, "csv write:", err)
+			return
 		}
 	}
 
-	outfile, err := os.Create("log_regexes.json")
+	// Also write a Go source file with ready-to-use regex constants
+	goFile, err := os.Create("log_regexes.go")
 	if err != nil {
-		fmt.Println("Failed to create output:", err)
+		fmt.Fprintln(os.Stderr, "create go file:", err)
 		return
 	}
-	defer outfile.Close()
+	defer goFile.Close()
 
-	enc := json.NewEncoder(outfile)
-	enc.SetIndent("", "  ")
-	enc.Encode(patterns)
-	fmt.Println("Exported patterns to log_regexes.json")
+	fmt.Fprintln(goFile, "package main")
+	fmt.Fprintln(goFile)
+	fmt.Fprintln(goFile, "// Auto-generated regex patterns for log parsing")
+	fmt.Fprintln(goFile, "// Generated by rawregexgen")
+	fmt.Fprintln(goFile)
+	fmt.Fprintln(goFile, "const (")
+
+	for i, p := range patterns {
+		constName := fmt.Sprintf("Pattern%d", i+1)
+		fmt.Fprintf(goFile, "\t// %s - from %s\n", constName, p.File)
+		fmt.Fprintf(goFile, "\t// Sample: %s\n", p.Line)
+		fmt.Fprintf(goFile, "\t// Groups: %s\n", strings.Join(p.GroupNames, ", "))
+		fmt.Fprintf(goFile, "\t%s = `%s`\n\n", constName, p.Regex)
+	}
+
+	fmt.Fprintln(goFile, ")")
+
+	fmt.Printf("Exported %d pattern(s) to log_regexes.csv and log_regexes.go\n", len(patterns))
+}
+
+// -----------------------------------------------------------------------------
+// pattern collection
+// -----------------------------------------------------------------------------
+
+func collectPatterns(dir string) ([]Pattern, error) {
+	seen := make(map[string]Pattern)
+
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, walkErr error) error {
+		if walkErr != nil || d.IsDir() {
+			return walkErr
+		}
+		if !strings.HasSuffix(d.Name(), ".log") && !strings.HasSuffix(d.Name(), ".txt") {
+			return nil
+		}
+
+		lines, err := sampleLines(path, 100)
+		if err != nil {
+			return err
+		}
+		for _, ln := range lines {
+			rex, groups := deriveRegex(ln)
+			if rex == "" {
+				continue
+			}
+			if _, dup := seen[rex]; dup {
+				continue
+			}
+			seen[rex] = Pattern{
+				File:       d.Name(),
+				Line:       ln,
+				Regex:      rex,
+				GroupNames: groups,
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]Pattern, 0, len(seen))
+	for _, p := range seen {
+		out = append(out, p)
+	}
+	return out, nil
+}
+
+func sampleLines(file string, max int) ([]string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var out []string
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		if len(out) >= max {
+			break
+		}
+		t := strings.TrimSpace(sc.Text())
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out, sc.Err()
+}
+
+// -----------------------------------------------------------------------------
+// regex derivation
+// -----------------------------------------------------------------------------
+
+var (
+	// exact matcher for the Java log format
+	javaProbe = regexp.MustCompile(
+		`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} \[.+\] [A-Z]+ [\w.]+ - \w+\(.+\)$`,
+	)
+
+	javaRegex = `^(?P<date>\d{4}-\d{2}-\d{2}) (?P<time>\d{2}:\d{2}:\d{2},\d{3}) \[(?P<context>[^\]]+)\] (?P<level>[A-Z]+) (?P<class>[\w\.]+) - (?P<method>\w+)\((?P<value>[^)]*)\)$`
+
+	javaGroups = []string{"date", "time", "context", "level", "class", "method", "value"}
+
+	// generic token regexes
+	dateRe   = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)                                            // YYYY-MM-DD
+	timeRe   = regexp.MustCompile(`\d{2}:\d{2}:\d{2}(?:[,.]\d{3})?`)                              // HH:MM:SS[,.mmm]?
+	uuidRe   = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`) // RFC4122 UUID
+	numberRe = regexp.MustCompile(`\b\d+\b`)                                                      // isolated number
+)
+
+// deriveRegex chooses the specialised Java pattern or falls back to a generic one.
+func deriveRegex(line string) (string, []string) {
+	switch {
+	case javaProbe.MatchString(line):
+		return javaRegex, javaGroups
+	default:
+		return buildGeneric(line)
+	}
+}
+
+// generic builder: escape the whole line then replace one instance of common tokens
+func buildGeneric(line string) (string, []string) {
+	escaped := regexp.QuoteMeta(line)
+	groupNames := []string{}
+
+	replacements := []struct {
+		re   *regexp.Regexp
+		pat  string
+		name string
+	}{
+		{dateRe, `(?P<date>\d{4}-\d{2}-\d{2})`, "date"},
+		{timeRe, `(?P<time>\d{2}:\d{2}:\d{2}(?:[.,:]\d{3})?)`, "time"},
+		{uuidRe, `(?P<uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`, "uuid"},
+		{numberRe, `(?P<num>\d+)`, "num"},
+	}
+
+	pat := escaped
+	for _, r := range replacements {
+		if loc := r.re.FindStringIndex(line); loc != nil {
+			raw := regexp.QuoteMeta(line[loc[0]:loc[1]])
+			pat = strings.Replace(pat, raw, r.pat, 1)
+			groupNames = append(groupNames, r.name)
+		}
+	}
+
+	if pat == escaped { // nothing substituted
+		return "", nil
+	}
+	return "^" + pat + "$", groupNames
+}
+
+// -----------------------------------------------------------------------------
+// seed example
+// -----------------------------------------------------------------------------
+
+// seedExampleLogs creates ./logs/example.log if the directory doesn't exist
+func seedExampleLogs(dir string) error {
+	if _, err := os.Stat(dir); err == nil {
+		return nil // already present
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	f, err := os.Create(filepath.Join(dir, "example.log"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fmt.Fprintln(f, "2025-05-20 18:16:13,463 [WebContainer : 5 ] INFO com.example.Payment - heartbeat(true)")
+	fmt.Fprintln(f, "2025-05-21 10:22:45,781 [Worker Thread : 3 ] WARN com.example.BackupService - backup(failed)")
+	fmt.Println("Created ./logs/example.log – run the program again to generate regex.")
+	return nil
 }

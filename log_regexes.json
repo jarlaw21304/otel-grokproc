@@ -2,198 +2,85 @@
   {
     "file": "java-logs.txt",
     "line": "2025-05-20 18:16:13,463 [WebContainer : 5 ] INFO c.c.s.p.PaymentInstantCreditComponentImpl - heartbeat(true)",
-    "regex": "^\\(\\?P\\\u003cdate1\\\u003e\\d{\\(\\?P\\\u003cint5\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint6\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint7\\\u003e\\d+\\)}\\) \\(\\?P\\\u003ctime2\\\u003e\\d{\\(\\?P\\\u003cint8\\\u003e\\d+\\)}\\:\\d{\\(\\?P\\\u003cint9\\\u003e\\d+\\)}\\:\\d{\\(\\?P\\\u003cint10\\\u003e\\d+\\)},\\d{\\(\\?P\\\u003cint11\\\u003e\\d+\\)}\\) [WebContainer \\: \\(\\?P\\\u003cint12\\\u003e\\d+\\) ] \\(\\?P\\\u003clevel3\\\u003e[A\\-Z]+\\) \\(\\?P\\\u003cdotted4\\\u003e[\\w\\\\.]+\\) \\- heartbeat\\(true\\)$",
+    "regex": "^(?P<date>\\d{4}-\\d{2}-\\d{2}) (?P<time>\\d{2}:\\d{2}:\\d{2},\\d{3}) \\[(?P<context>[^\\]]+)\\] (?P<level>[A-Z]+) (?P<class>[\\w\\.]+) - (?P<method>\\w+)\\((?P<value>[^)]*)\\)$",
     "group_names": [
-      "date1",
-      "time2",
-      "level3",
-      "dotted4",
-      "int5",
-      "int6",
-      "int7",
-      "int8",
-      "int9",
-      "int10",
-      "int11",
-      "int12"
+      "date",
+      "time",
+      "context",
+      "level",
+      "class",
+      "method",
+      "value"
     ]
   },
   {
     "file": "samplelogs.txt",
-    "line": "time 1970-01-01T00:00:00Z",
-    "regex": "^time \\(\\?P\\\u003cdate1\\\u003e\\d{\\(\\?P\\\u003cint2\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint3\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint4\\\u003e\\d+\\)}\\)T00\\:\\(\\?P\\\u003cint5\\\u003e\\d+\\)\\:00Z$",
+    "line": "488 <166>1 2025-05-15T13:42:19-07:00 INA400 LEEF - - - 1.0|Raz-Lee iSecurity|Audit|1.0|MCD0300|usrName=EDIOPR devTime=2025-05-15-13.42.19.436 devTimeFormat=yyyy-MM-dd-HH.mm.ss.SSS source=*LCL-ED850EBLD sev=4 jobName=759738/EDIOPR/ED850EBLD pgmName=CED031 pgmLib=EDI5VMIPGM entryType=CD/C entryDesc=A command was run Sequence_number=0738078059 Port=00000 Name_of_object=RCVMSG Library_name=QSYS Object_type=*CMD Run_from_CL/REXX=Y Command_string=RCVMSG RMV(*NO) MSGDTA(&MSGDTA) MSGID(&MSGID)",
+    "regex": "^(?P<num>\\d+) <166>1 (?P<date>\\d{4}-\\d{2}-\\d{2})T(?P<time>\\d{2}:\\d{2}:\\d{2}(?:[.,:]\\d{3})?)-07:00 INA400 LEEF - - - 1\\.0\\|Raz-Lee iSecurity\\|Audit\\|1\\.0\\|MCD0300\\|usrName=EDIOPR devTime=2025-05-15-13\\.42\\.19\\.436 devTimeFormat=yyyy-MM-dd-HH\\.mm\\.ss\\.SSS source=\\*LCL-ED850EBLD sev=4 jobName=759738/EDIOPR/ED850EBLD pgmName=CED031 pgmLib=EDI5VMIPGM entryType=CD/C entryDesc=A command was run Sequence_number=0738078059 Port=00000 Name_of_object=RCVMSG Library_name=QSYS Object_type=\\*CMD Run_from_CL/REXX=Y Command_string=RCVMSG RMV\\(\\*NO\\) MSGDTA\\(&MSGDTA\\) MSGID\\(&MSGID\\)$",
     "group_names": [
-      "date1",
-      "int2",
-      "int3",
-      "int4",
-      "int5"
+      "date",
+      "time",
+      "num"
     ]
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "observed_time 2025-05-15T20:42:19.8622536Z",
-    "regex": "^observed_time \\(\\?P\\\u003cdate1\\\u003e\\d{\\(\\?P\\\u003cint3\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint4\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint5\\\u003e\\d+\\)}\\)T\\(\\?P\\\u003ctimeDot2\\\u003e\\d{\\(\\?P\\\u003cint6\\\u003e\\d+\\)}\\:\\d{\\(\\?P\\\u003cint7\\\u003e\\d+\\)}\\:\\d{\\(\\?P\\\u003cint8\\\u003e\\d+\\)}\\\\.\\d+\\)Z$",
-    "group_names": [
-      "date1",
-      "timeDot2",
-      "int3",
-      "int4",
-      "int5",
-      "int6",
-      "int7",
-      "int8"
-    ]
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "Body",
-    "regex": "^Body$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "",
-    "regex": "^$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "488 \u003c166\u003e1 2025-05-15T13:42:19-07:00 INA400 LEEF - - - 1.0|Raz-Lee iSecurity|Audit|1.0|MCD0300|usrName=EDIOPR devTime=2025-05-15-13.42.19.436 devTimeFormat=yyyy-MM-dd-HH.mm.ss.SSS source=*LCL-ED850EBLD sev=4 jobName=759738/EDIOPR/ED850EBLD pgmName=CED031 pgmLib=EDI5VMIPGM entryType=CD/C entryDesc=A command was run Sequence_number=0738078059 Port=00000 Name_of_object=RCVMSG Library_name=QSYS Object_type=*CMD Run_from_CL/REXX=Y Command_string=RCVMSG RMV(*NO) MSGDTA(\u0026MSGDTA) MSGID(\u0026MSGID)",
-    "regex": "^\\(\\?P\\\u003cint7\\\u003e\\d+\\) \\\u003c\\(\\?P\\\u003cint8\\\u003e\\d+\\)\\\u003e\\(\\?P\\\u003cint9\\\u003e\\d+\\) \\(\\?P\\\u003cdate1\\\u003e\\d{\\(\\?P\\\u003cint10\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint11\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint12\\\u003e\\d+\\)}\\)T13\\:\\(\\?P\\\u003cint13\\\u003e\\d+\\)\\:\\(\\?P\\\u003cint14\\\u003e\\d+\\)\\-\\(\\?P\\\u003cint15\\\u003e\\d+\\)\\:\\(\\?P\\\u003cint16\\\u003e\\d+\\) INA400 LEEF \\- \\- \\- \\(\\?P\\\u003cdotted3\\\u003e[\\w\\\\.]+\\)|Raz\\-Lee iSecurity|Audit|\\(\\?P\\\u003cdotted4\\\u003e[\\w\\\\.]+\\)|MCD0300|usrName\\=EDIOPR devTime\\=\\(\\?P\\\u003cdate2\\\u003e\\d{\\(\\?P\\\u003cint17\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint18\\\u003e\\d+\\)}\\-\\d{\\(\\?P\\\u003cint19\\\u003e\\d+\\)}\\)\\-\\(\\?P\\\u003cdotted5\\\u003e[\\w\\\\.]+\\) devTimeFormat\\=yyyy\\-MM\\-dd\\-\\(\\?P\\\u003cdotted6\\\u003e[\\w\\\\.]+\\) source\\=\\*LCL\\-ED850EBLD sev\\=\\(\\?P\\\u003cint20\\\u003e\\d+\\) jobName\\=\\(\\?P\\\u003cint21\\\u003e\\d+\\)/EDIOPR/ED850EBLD pgmName\\=CED031 pgmLib\\=EDI5VMIPGM entryType\\=CD/C entryDesc\\=A command was run Sequence_number\\=\\(\\?P\\\u003cint22\\\u003e\\d+\\) Port\\=\\(\\?P\\\u003cint23\\\u003e\\d+\\) Name_of_object\\=RCVMSG Library_name\\=QSYS Object_type\\=\\*CMD Run_from_CL/REXX\\=Y Command_string\\=RCVMSG RMV\\(\\*NO\\) MSGDTA\\(\u0026MSGDTA\\) MSGID\\(\u0026MSGID\\)$",
-    "group_names": [
-      "date1",
-      "date2",
-      "dotted3",
-      "dotted4",
-      "dotted5",
-      "dotted6",
-      "int7",
-      "int8",
-      "int9",
-      "int10",
-      "int11",
-      "int12",
-      "int13",
-      "int14",
-      "int15",
-      "int16",
-      "int17",
-      "int18",
-      "int19",
-      "int20",
-      "int21",
-      "int22",
-      "int23"
-    ]
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "Attributes",
-    "regex": "^Attributes$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "",
-    "regex": "^$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "log_type ibm-iseries",
-    "regex": "^log_type ibm\\-iseries$",
-    "group_names": []
   },
   {
     "file": "samplelogs.txt",
     "line": "net.host.ip 172.23.250.212",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cdotted2\\\u003e[\\w\\\\.]+\\)$",
+    "regex": "^net\\.host\\.ip (?P<num>\\d+)\\.23\\.250\\.212$",
     "group_names": [
-      "dotted1",
-      "dotted2"
-    ]
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "net.host.name WLGOGW01094P02.corp.costco.com",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cdotted2\\\u003e[\\w\\\\.]+\\)$",
-    "group_names": [
-      "dotted1",
-      "dotted2"
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
     "line": "net.host.port 6005",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cint2\\\u003e\\d+\\)$",
+    "regex": "^net\\.host\\.port (?P<num>\\d+)$",
     "group_names": [
-      "dotted1",
-      "int2"
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
     "line": "net.peer.ip 172.23.250.155",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cdotted2\\\u003e[\\w\\\\.]+\\)$",
+    "regex": "^net\\.peer\\.ip (?P<num>\\d+)\\.23\\.250\\.155$",
     "group_names": [
-      "dotted1",
-      "dotted2"
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
     "line": "net.peer.name 172.23.250.155",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cdotted2\\\u003e[\\w\\\\.]+\\)$",
+    "regex": "^net\\.peer\\.name (?P<num>\\d+)\\.23\\.250\\.155$",
     "group_names": [
-      "dotted1",
-      "dotted2"
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
     "line": "net.peer.port 36577",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cint2\\\u003e\\d+\\)$",
+    "regex": "^net\\.peer\\.port (?P<num>\\d+)$",
     "group_names": [
-      "dotted1",
-      "int2"
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
-    "line": "net.transport IP.TCP",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) \\(\\?P\\\u003cdotted2\\\u003e[\\w\\\\.]+\\)$",
+    "line": "observed_time 2025-05-15T20:42:19.8622536Z",
+    "regex": "^observed_time (?P<date>\\d{4}-\\d{2}-\\d{2})T(?P<time>\\d{2}:\\d{2}:\\d{2}(?:[.,:]\\d{3})?)2536Z$",
     "group_names": [
-      "dotted1",
-      "dotted2"
+      "date",
+      "time",
+      "num"
     ]
   },
   {
     "file": "samplelogs.txt",
-    "line": "Resource",
-    "regex": "^Resource$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "",
-    "regex": "^$",
-    "group_names": []
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "host.name WLGOGW01094P02",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) WLGOGW01094P02$",
+    "line": "time 1970-01-01T00:00:00Z",
+    "regex": "^time (?P<date>\\d{4}-\\d{2}-\\d{2})T(?P<time>\\d{2}:\\d{2}:\\d{2}(?:[.,:]\\d{3})?)Z$",
     "group_names": [
-      "dotted1"
-    ]
-  },
-  {
-    "file": "samplelogs.txt",
-    "line": "os.type windows",
-    "regex": "^\\(\\?P\\\u003cdotted1\\\u003e[\\w\\\\.]+\\) windows$",
-    "group_names": [
-      "dotted1"
+      "date",
+      "time",
+      "num"
     ]
   }
 ]
