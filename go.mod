@@ -1,8 +1,8 @@
 module github.com/jarlaw21304/otel-grokproc
 
-go 1.23.0
+go 1.24.3
 
-toolchain go1.23.9
+toolchain go1.24.3
 
 replace go.opentelemetry.io/collector => github.com/open-telemetry/opentelemetry-collector v0.97.0
 
