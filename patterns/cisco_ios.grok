@@ -15,7 +15,7 @@ CISCO_IOS_MAC_MOVE %{GREEDYDATA} MAC %{GREEDYDATA:src_mac} moved%{GREEDYDATA}
 CISCO_IOS_IPONLY %{IP:src_ip}
 
 # 5. CRLHTTPFETCHREDIR
-CISCO_IOS_CRL_REQ CRL Request for trustpoint %{GREEDYDATA} %{INT:status_code}%{GREEDYDATA} %{URI:url}
+CISCO_IOS_CRL_REQ CRL Request for trustpoint %{DATA:trustpoint} %{INT:status_code}%{DATA} %{URI:url}
 
 # 6. Chassis data
 CISCO_IOS_CHASSIS Chassis %{DATA:Chassis_data}: %{GREEDYDATA}
@@ -29,10 +29,9 @@ CISCO_IOS_NETCONF '%{TIMESTAMP_ISO8601:ts} %{HOSTNAME:target_host}-%{INT} %{WORD
 # 9. General rich syslog patterns (a few key examples; tweak as needed)
 CISCO_IOS_SYSLOG1 "<%{INT:priority}>%{INT:sequence}: %{HOSTNAME:inter_host}:"
 CISCO_IOS_SYSLOG2 "<%{INT:priority}>%{SYSLOGTIMESTAMP} %{HOSTNAME:inter_host} %{GREEDYDATA:desc}"
-CISCO_IOS_SYSLOG3 "^<\\d+>\\d+: (\\*)?%{SYSLOGTIMESTAMP:timestamp} CET: %%{DATA:cisco_tag}:\\s*%{GREEDYDATA:cisco_message}"
+CISCO_IOS_SYSLOG3 "^<\\d+>\\d+: (\\*)?%{SYSLOGTIMESTAMP:timestamp} CET: %{DATA:cisco_tag}:\\s*%{GREEDYDATA:cisco_message}"
 
 # 10. Many other event types (leave originals as needed...)
 
 # 11. Fallback catch-all for "host" after syslog prefix (good for test harness)
 CISCO_IOS_SIMPLE_SYSLOG \<%{INT}>%{INT}: %{HOSTNAME:inter_host}:
-
