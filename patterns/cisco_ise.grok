@@ -7,17 +7,17 @@ CISCO_ISE_AUTHZ_RESULT \<%{INT:priority}>%{INT:sequence}: %{IPORHOST:ise_host}: 
 
 
 # 2. NTP Server configuration lines
-CISCO_ISE_NTP_3SERVER NTP Server 1=%{DATA:ntp_server_1},.*NTP Server 2=%{DATA:ntp_server_2},.*NTP Server 3=%{DATA:ntp_server_3}
+CISCO_ISE_NTP_3SERVER Server 1=%{DATA:ntp_server_1},.*Server 2=%{DATA:ntp_server_2},.*Server 3=%{DATA:ntp_server_3}
 
-CISCO_ISE_NTP_2SERVER NTP Server 1=%{DATA:ntp_server_1},.*NTP Server 2=%{DATA:ntp_server_2}
+CISCO_ISE_NTP_2SERVER Server 1=%{DATA:ntp_server_1},.*Server 2=%{DATA:ntp_server_2}
 
-CISCO_ISE_NTP_1SERVER NTP Server 1=%{DATA:ntp_server_1}
+CISCO_ISE_NTP_1SERVER Server 1=%{DATA:ntp_server_1}
 
 # 3. Generic Key-Value log (fallback, captures generic [Key: value] pairs)
-CISCO_ISE_KV \[(?P<key>\w+):: %{DATA:value}\]
+CISCO_ISE_KV \[%{WORD:key}:: %{DATA:value}\]
 
 # 4. Step data/example endpoint fields
-CISCO_ISE_SUPPLICANT Misconfigured Supplicant Detected with EndpointID=%{DATA:endpoint_id}( from user=%{USERNAME:username}| is fixed)
+CISCO_ISE_SUPPLICANT Misconfigured Supplicant Detected with EndpointID=%{DATA:endpoint_id}(?: from user=%{USERNAME:username}| is fixed)?
 
 # 5. General "message details" pattern
 CISCO_ISE_MSG %{GREEDYDATA:msg_text}
